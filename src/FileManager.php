@@ -11,6 +11,7 @@ use Alexusmai\LaravelFileManager\Traits\PathTrait;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Image;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Storage;
 
 class FileManager
@@ -178,7 +179,7 @@ class FileManager
             $user = auth()->user();
 
             $user->addMedia($file)
-                ->toMediaCollection();
+                ->toMediaCollection('uploads', 'private');
 
         }
 
@@ -213,16 +214,25 @@ class FileManager
         $deletedItems = [];
 
         foreach ($items as $item) {
+            $path = $item['path'] ?? null;
+            $id = substr($path, -1);
+
             // check all files and folders - exists or no
-            if (!Storage::disk($disk)->exists($item['path'])) {
+            if (!Storage::disk($disk)->exists($path)) {
                 continue;
             } else {
+
                 if ($item['type'] === 'dir') {
                     // delete directory
-                    Storage::disk($disk)->deleteDirectory($item['path']);
+                    $deleted = Storage::disk($disk)->deleteDirectory($path);
                 } else {
                     // delete file
-                    Storage::disk($disk)->delete($item['path']);
+                    $deleted = Storage::disk($disk)->delete($path);
+                }
+
+                // Spatie media delete item
+                if ($deleted && (int) $id) {
+                    Media::find($id)->delete();
                 }
             }
 
