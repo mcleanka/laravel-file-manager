@@ -313,12 +313,12 @@ class FileManager
             $filename = basename($path);
         }
 
-        $header = [
+        $headers = [
             'Content-Type' => 'application/*',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ];
 
-        return Storage::disk($disk)->download($path, $filename, $header);
+        return Storage::disk($disk)->download($path, $filename, $headers);
     }
 
     /**
