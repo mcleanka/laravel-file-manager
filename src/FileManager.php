@@ -305,6 +305,7 @@ class FileManager
      */
     public function download($disk, $path)
     {
+
         // if file name not in ASCII format
         if (!preg_match('/^[\x20-\x7e]*$/', basename($path))) {
             $filename = Str::ascii(basename($path));
@@ -312,7 +313,12 @@ class FileManager
             $filename = basename($path);
         }
 
-        return Storage::disk($disk)->download($path, $filename);
+        $header = [
+            'Content-Type' => 'application/*',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ];
+
+        return Storage::disk($disk)->download($path, $filename, $header);
     }
 
     /**
